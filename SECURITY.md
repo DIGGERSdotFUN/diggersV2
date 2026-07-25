@@ -136,13 +136,15 @@ to revoke.
 function sweepDonations() external returns (uint256 amount) {
     if (msg.sender != LAUNCHPAD) revert NotLaunchpad();
     amount = address(this).balance;
-    ...
+    if (amount == 0) return 0;
     (bool ok,) = LAUNCHPAD.call{value: amount}("");
+    if (!ok) revert SweepFailed();
 }
 
 function sweepErc20(address erc20) external returns (uint256 amount) {
     if (msg.sender != LAUNCHPAD) revert NotLaunchpad();
     amount = IWETH9(erc20).balanceOf(address(this));
+    if (amount == 0) return 0;
     if (!IWETH9(erc20).transfer(LAUNCHPAD, amount)) revert SweepFailed();
 }
 ```
@@ -164,7 +166,10 @@ spender and one destination:
 function execBuyback(address token, uint256 userAmountOut) external {
     if (msg.sender != address(this)) revert NotSelf();   // self-call only
 
-    (uint256 spend, uint256 minOut) = DiggerBuybackLib.prepare(...);  // sweeps the pot
+    TokenRecord memory rec = _tokenRecords[token];
+    (uint256 spend, uint256 minOut) = DiggerBuybackLib.prepare(
+        token, WETH, rec.pool, rec.poolFee, userAmountOut, ...   // sweeps the pot
+    );
     if (spend == 0) return;
 
     DiggerV3.SwapOutcome memory out = _swapV3(rec.pool, token, true, spend, address(this), minOut);
@@ -200,9 +205,11 @@ function _maybeBuyback(address token, uint256 userAmountOut) private {
 
 Three guarantees in four lines. The buyer's fill is locked in before the
 pot spends anything, so it cannot front-run or sandwich them. The spend is
-sized against `userAmountOut` — the carrying trade's own output — so the
-pot can never move the price by more than the buy it rides on
-(anti-sandwich sizing in `DiggerBuybackLib.prepare`). And the whole flow is
+sized in `DiggerBuybackLib.prepare` so the buyback's token output can
+never exceed the carrying buy's own output — when the full pot would, the
+spend is scaled down to `pot · userOut / fullOut` and then given a further
+20% safety haircut. A dust buy can only ever unlock a dust buyback; the
+pot can never move the price by more than the buy it rides on. And the whole flow is
 a try/caught self-call: a buyback failure can never revert the user's
 trade. The buyback only ever pushes the price *after* the buyer is
 already in.
