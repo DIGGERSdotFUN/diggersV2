@@ -102,19 +102,28 @@ DiggersToken(payable(token)).transferFrom(msg.sender, address(this), sum);
 
 ### Why we built it this way
 
-Because the pattern the scanners *prefer* — `approve()` then swap — is the
-single largest source of stolen funds in DeFi. Every approval you sign for
-a router is a standing allowance that survives the trade, sits on-chain
-forever, and waits for a phishing site or a compromised router to spend it.
+Because we want trading on the EVM to feel the way it always should have:
+**one tap, one transaction** — no "approve first", no second signature, no
+gas spent on permission before you can sell. To get there, the token carves
+out a single, surgical exception and nothing more:
 
-Diggers tokens have **zero approvals in their entire lifecycle**:
+- **Only one address can do this.** The Diggers launchpad (plus the vesting
+  locker) — immutable contracts, deployed once, no admin, no upgrade path.
+  The exemption is hardcoded to them.
+- **Only in one situation.** A sell (or lock escrow) you initiated
+  yourself: the pull is bound to `msg.sender` of your own call, inside your
+  own transaction, and the binding evaporates when the transaction ends.
+- **Every other contract follows normal rules.** Routers, aggregators, any
+  dApp — they all need a standard ERC-20 `approve` from you, exactly like
+  any other token. The ERC-20 standard is not weakened for anyone else.
 
-- Nothing to sign before selling. One transaction, not two.
-- Nothing to revoke, ever. Your revoke-cash dashboard stays empty.
-- No standing allowance for a drainer to spend. The "privilege" exists for
-  one transaction — yours — and evaporates with it.
-
-The scanner flags the cure because it pattern-matches like the disease.
+It is secure *because* of how narrow it is: the launchpad physically cannot
+name anyone but the outer caller as `from` — no function exists that writes
+any other address into that transient slot. The exemption is not a
+permission someone holds; it is a reflex triggered by your own signature.
+A welcome side effect: since you never approve anything, no standing
+allowance is ever left on-chain afterward — nothing to clean up, nothing
+to revoke.
 
 ---
 
