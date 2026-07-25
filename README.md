@@ -4,7 +4,7 @@
 One transaction. One billion tokens. Locked liquidity forever.  
 No bonding curve. No migration. No admin keys. Just the mine.
 
-[Website](https://diggers.fun) · [Docs](https://docs.diggers.fun) · [On-chain examples](EXAMPLES.md) · [𝕏](https://x.com/DIGGERSdotFUN) · [Telegram](https://t.me/DIGGERSdotFUN)
+[Website](https://diggers.fun) · [Docs](https://docs.diggers.fun) · [Functions & examples](FUNCTIONS.md) · [𝕏](https://x.com/DIGGERSdotFUN) · [Telegram](https://t.me/DIGGERSdotFUN)
 
 ---
 
@@ -349,7 +349,7 @@ Per-chain configuration:
 | Robinhood Chain | 4663 | ETH (WETH) | `0x1f7d7550B1b028f7571E69A784071F0205FD2EfA` | 0.001 ETH |
 | Stable | 988 | USDT0 (dual-native) | `0x88F0a512eF09175D456bc9547f914f48C013E4aA` | 1 USDT0 |
 
-See `v2-deployments.diggersdotfun.eth` for the canonical registry, and [EXAMPLES.md](EXAMPLES.md) for live transactions, function selectors, and the full event topic reference.
+See `v2-deployments.diggersdotfun.eth` for the canonical registry, and [FUNCTIONS.md](FUNCTIONS.md) for the function reference, live transactions, and the full event topic reference.
 
 ## Building
 

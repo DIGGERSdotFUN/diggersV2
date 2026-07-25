@@ -1,4 +1,4 @@
-# On-Chain Examples & Event Reference
+# Functions, Events & On-Chain Examples
 
 > Every transaction below is **real and live**. Diggers V2 is deployed at the
 > **same addresses on Ethereum (1), Robinhood Chain (4663) and Stable (988)**.
@@ -87,6 +87,86 @@ served by **DiggersHub** (`quoteBuy`, `quoteSell`, `poolState`, `progressOf`,
 | `0xb9b3e06a` | `lockedOf(address token, address wallet)` — view |
 | `0xddd8e032` | `lockedSupplyOf(address token)` — view |
 | `0x8f62a56c` | `withdrawableOf(address token, address wallet, uint256 index)` — view |
+
+---
+
+## Creating tokens — integrator quickstart
+
+Two entry points on the launchpad. Both deploy the token, create + initialize
+the 1% Uniswap V3 pool, seed the full 1B supply as permanent liquidity and
+start trading **in the same transaction**.
+
+### `create` — the simple path (recommended for terminals / GMGN-style integrations)
+
+```solidity
+function create(string name, string symbol, string metadataURI)
+    external payable returns (address token);        // selector 0x5d28560a
+```
+
+The one-call V1-style launch. Sane defaults are baked in — no structs, no
+tables:
+
+- `msg.value` must be **at least the creation fee** (0.001 ETH on
+  Ethereum/Robinhood, 1 USDT0 on Stable — read `CREATION_FEE()` live).
+  The fee runs the pool's first buy and the bought tokens are burned.
+- **Any excess `msg.value` becomes the initial buy**, delivered straight to
+  the caller. `minOut` is not needed: the pool is created and seeded in this
+  same transaction, so the price is deterministic and cannot be sandwiched.
+- Tokenomics default to 50% burn / 50% daily trader pot, no buyback, no Glue.
+- Both per-token owner roles are renounced from birth; the creator fee-split
+  table defaults to 100% → caller.
+- `name`/`symbol` must pass the on-chain registry charset (name 1–32,
+  ASCII alphanumeric + single internal spaces; symbol 1–10, alphanumeric)
+  and must not be locked by a live launch lock or blue-chip reservation
+  (check `isNameFree` / `isSymbolFree` on the hub first).
+
+```bash
+# launch + 0.004 ETH initial buy in one call (Ethereum / Robinhood):
+cast send 0x5044E79669Fee78A7bC2007A8e7AE4f820252e4b \
+  "create(string,string,string)" "My Token" "MTK" "ipfs://<metadata.json>" \
+  --value 0.005ether
+```
+
+The new token address is the return value, and the `Created` event in the
+receipt carries token, creator, name, symbol, metadataURI, **pool address**,
+startSqrtPriceX96, poolFee and burnShareWad.
+
+### `createFull` — the full path
+
+```solidity
+function createFull(
+    TokenParams params,        // identity + tokenomics + owner roles
+    FeeSplit[]  feeSplits,     // creator quote-side fee table, shares sum to 1e18
+    LockOrder[] locks,         // initial-buy distribution + vesting (optional)
+    uint256     initialBuyMinOut
+) external payable returns (address token);          // selector 0x6dd388b5
+```
+
+```solidity
+struct TokenParams {
+    string  name;
+    string  symbol;
+    string  metadataURI;
+    uint256 burnShareWad;      // token-side fees burned            [0, 1e18]
+    uint256 buybackShareWad;   // creator quote slice → buyback pot [0, 1e18]
+    uint256 backingShareWad;   // creator quote slice → Glue NAV    (needs Glue active)
+    uint256 stakingShareWad;   // creator quote slice → Glue staking
+    uint256 stakeShareWad;     // token-side fees → Glue staking
+    address owner;             // holds BOTH per-token roles; 0x0 = renounced from birth
+}
+struct FeeSplit  { address to; uint256 share; }                      // shares sum to 1e18, max 10 rows
+struct LockOrder { address to; uint256 shareWad; uint32 tranches; uint64 duration; }
+```
+
+Rules: all percentages are **1e18-scaled** (1e18 = 100%, never bps);
+`buyback + backing + staking <= 1e18` on the quote side; `burn + stake <= 1e18`
+on the token side (the daily pot takes the remainder). `LockOrder` rows split
+the initial buy output — `duration == 0` pays immediately, otherwise the slice
+is escrowed on the DiggersLocker with `tranches` equal unlocks over
+`duration`; locks without an initial buy revert.
+
+Public creation is currently **open on all three chains** (`creationOpen()`
+= true; gated by `CreationClosed()` revert otherwise).
 
 ---
 
@@ -404,9 +484,11 @@ public creation on all three chains with `setCreationOpen(true)`
 
 ---
 
-### 7. Canonical Uniswap V3 pool interaction
+### 7. Trading through Uniswap V3 directly (routers & aggregators)
 
-Every Diggers pool is a standard Uniswap V3 pool:
+Every Diggers pool is a **standard Uniswap V3 pool** — no hooks, no custom
+AMM. Any V3-compatible router, aggregator adapter or terminal can trade it
+with zero Diggers-specific code:
 
 ```
 token0/token1: quote token (WETH / WUSDT0) and the launched ERC-20, sorted by address
@@ -414,17 +496,89 @@ fee:           10000 (1%, forced — no per-launch choice)
 tickSpacing:   200
 ```
 
-The pool is created and initialized inside the `create()` transaction at a
-constant start price. The Diggers contract is the **only LP**, holding a
-single single-sided position over the full launch range. There is no function
-to remove this liquidity — it is locked forever by code.
+**Pool discovery** — either of:
 
-External routers and aggregators can swap through the same V3 pool directly.
-The Diggers `buy()`/`sell()` entry points are recommended because they handle
-native wrapping, points, telemetry and holder tracking automatically —
-**but the token's `_update` hook attributes pool legs regardless of the
-router**, so external-router trades still count toward points, telemetry and
-graduation.
+- `IUniswapV3Factory(factory).getPool(quoteToken, token, 10000)` with the
+  per-chain factory + quote token from the deployments table, or
+- `DiggersHub.tokenRecord(token)` which returns the pool address directly
+  (plus tick bounds and fee config), or the `pool` field of the `Created`
+  event.
+
+Live pools of the sample tokens above:
+
+| Token | Chain | V3 pool |
+|---|---|---|
+| TEST `0xfa4f…eee4` | Stable | `0x32df0ba016c6dfcfa23aed0113419e63262941a7` |
+| TARIO `0xd6ae…dab8` | Stable | `0x6f568b750fd1a779a1260f15af75e80bbf3ae40b` |
+| SAMSUNG `0x8148…55a7` | Stable | `0x7140e38f5af7fd3cef24ba59281d914c169e49a3` |
+| ETHKillers `0xcb6b…8e2c` | Ethereum | `0x8f6cc3e9990bb210aa887b5a74587135e89b4283` |
+| Vlad `0x0fbe…5624` | Robinhood | `0xccf86f8f26c61ddfd4b12702e7759bd42a8010e3` |
+
+**Live V3 swap examples** — the sample transactions above ARE canonical V3
+swaps; the pool logs its standard `Swap` event (`0xc42079f9…`) on every one:
+
+- V3 buy leg: [`0x4718e7b1…b532`](https://stablescan.xyz/tx/0x4718e7b1f219dd46c5f51b492d3c0962220c41059067448212ebb29c3022b532)
+  — `Swap` at pool `0x6f56…e40b` (log #7): quote in, token out
+- V3 sell leg: [`0x3b31c2be…3676`](https://stablescan.xyz/tx/0x3b31c2be4901e561247d5412c67a91607dff79ddb36a5dde6060ae362e743676)
+  — `Swap` at pool `0x32df…41a7` (log #4): token in, quote out
+
+**Quoting** — `DiggersHub.quoteBuy(token, ethIn)` / `quoteSell(token, tokenIn)`
+return fee-inclusive quotes with no V3 quoter lens needed; standard V3
+quoters work too.
+
+**Integration notes:**
+
+- Selling through an external router requires a normal ERC-20 `approve` to
+  that router. The approve-free path only exists on the Diggers `sell()`.
+- Buys through external routers must swap the **wrapped** quote (WETH /
+  WUSDT0); Diggers `buy()`/`sell()` handle native wrapping/unwrapping.
+- The token's `_update` hook attributes pool legs **regardless of the
+  router** — external-router trades still count toward points, telemetry,
+  holder tracking and graduation, and still emit `PoolTrade`/`Swapped`-class
+  telemetry from the hub. The rich `Swapped` event only prints for swaps
+  routed through Diggers.
+- The 2% anti-whale cap applies to recipient balances until the token
+  graduates — size buy legs accordingly (max recipient balance 20M tokens).
+- The Diggers contract is the **only LP**, holding one single-sided position
+  over the full launch range. There is no function to remove this liquidity —
+  it is locked forever by code.
+
+---
+
+### 8. Graduation (the event integrators should watch)
+
+Graduation is pump.fun-style **supply-sold**, checked automatically on every
+trade and callable permissionlessly via `graduate(token)` (`0xff6d8d05`):
+once **80% of the fixed 1B supply has been bought out of the pool** (the
+pool's token balance falls to 200M), the token graduates and the 2%
+anti-whale cap drops forever. Price plays no role; nothing migrates — the
+liquidity was on Uniswap V3 from block one.
+
+Two events fire from the hub in the same breath:
+
+```
+TokenGraduated(address indexed token, address indexed pool)     // topic0 0x806ef27e…
+Graduated(address indexed token, bytes32 indexed nameKey, bytes32 indexed symbolKey,
+          uint32 holders, uint256 volumeEthCum, uint256 supplySold)   // topic0 0x4a2dd56e…
+```
+
+`TokenGraduated` is the minimal integrator-facing signal ("open market now,
+cap dropped") — third-party terminals subscribe to that ONE topic on the hub
+address and read the pool straight from the log. `Graduated` carries the rich
+payload for indexers.
+
+Polling instead of subscribing: `DiggersHub.graduatedAt(token)` (0 = not
+graduated) and `DiggersHub.progressOf(token)` (live `supplySold` vs
+`supplySoldTarget`, holders, volume, mean mcap).
+
+No token has graduated yet on the current deployment, so no transaction is
+linked here — watch topic0 `0x806ef27e…` on
+`0xdEBA423Ab2D46650061555aaBEC362673c811b44` on every chain.
+
+After graduation a token can further earn **Blue Chip status**
+(`blueChip(token)`, emits `BlueChip` / revocable via `BlueChipLost`), which
+locks its name and ticker on the registry — dormant until graduation, and
+irrelevant to trading integrations.
 
 ---
 
@@ -489,17 +643,11 @@ burnShareWad.
 
 ### Sample graduation event
 
-No token has graduated yet on the current deployment. Graduation is
-supply-sold: once 80% of the fixed 1B supply has been bought out of the pool,
-`graduate(token)` (permissionless, also auto-checked on trades) emits both:
-
-```
-Graduated(address indexed token, bytes32 indexed nameKey, bytes32 indexed symbolKey, uint32 holders, uint256 volumeEthCum, uint256 supplySold)
-TokenGraduated(address indexed token, address indexed pool)
-```
-
-`TokenGraduated` is the minimal integrator-facing signal ("open market now" —
-the anti-whale cap is dropped); `Graduated` carries the rich payload.
+No token has graduated yet on the current deployment — see
+[§8 Graduation](#8-graduation-the-event-integrators-should-watch) for the
+exact event signatures, topic0 hashes and detection guidance. The short
+version: subscribe to `TokenGraduated(address,address)` (topic0
+`0x806ef27e…`) on the hub address.
 
 ---
 
