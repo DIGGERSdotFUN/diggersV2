@@ -207,6 +207,18 @@ a try/caught self-call: a buyback failure can never revert the user's
 trade. The buyback only ever pushes the price *after* the buyer is
 already in.
 
+### Why we built it this way
+
+We wanted buyback-and-burn to be a *mechanism*, not a promise. The usual
+setup — fees flow to a team wallet, and the team pinky-swears to buy back —
+is exactly the thing users shouldn't have to trust. So we removed the
+wallet: the pot lives **on the token contract itself**, anyone can top it
+up with a plain transfer (no special function, no approval — just send),
+creators can route a slice of their fees into it automatically, and the
+only thing the code can do with that balance is buy the token and burn it.
+No treasury, no discretion, no "next week." The sweep functions the
+scanner flags are the plumbing that makes the promise unnecessary.
+
 ### The liquidity itself cannot be drained — by anyone
 
 The actual pool liquidity, which the flag's name implies is at risk:
@@ -258,6 +270,17 @@ an **event relay** to the DiggersHub (an immutable contract whose only job
 is printing logs), and the points engine. No value moves, no called address
 is user-controlled, and the points path runs through a same-block
 round-trip guard — a flash-loan buy-then-sell earns exactly zero.
+
+### Why we built it this way
+
+Because we wanted the entire game to live on-chain. Digging points, the
+top-10 leaderboard, the daily pot, graduation — on most platforms those
+run on a company server: an off-chain indexer counts trades, an admin
+script picks the winners, and users trust the website. We put all of it in
+the token's own transfer pipeline, where it cannot be paused, edited, or
+run selectively — and relayed everything to one hub address so any indexer
+can verify every point ever credited. The "external calls" are the cost of
+making the leaderboard as trustless as the balances.
 
 The same flag fires for every token with any transfer hook (reflections,
 taxes, rebase, hooks of any kind). Meanwhile the checks that measure actual
