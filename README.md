@@ -4,7 +4,7 @@
 One transaction. One billion tokens. Locked liquidity forever.  
 No bonding curve. No migration. No admin keys. Just the mine.
 
-[Website](https://diggers.fun) · [Docs](https://diggers.fun/doc) · [Functions & examples](FUNCTIONS.md) · [𝕏](https://x.com/DIGGERSdotFUN) · [Telegram](https://t.me/DIGGERSdotFUN)
+[Website](https://diggers.fun) · [Docs](https://diggers.fun/doc) · [Functions & examples](FUNCTIONS.md) · [Security flags explained](SECURITY.md) · [𝕏](https://x.com/DIGGERSdotFUN) · [Telegram](https://t.me/DIGGERSdotFUN)
 
 ---
 
