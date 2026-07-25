@@ -665,9 +665,15 @@ version: subscribe to `TokenGraduated(address,address)` (topic0
 
 | Endpoint | Description |
 |---|---|
-| `GET https://diggers.fun/api/token-info` | Paginated token list (DexScreener-shaped) |
+| `GET https://diggers.fun/api/token-info` | Paginated token list — **native Diggers V2 launches only** (DexScreener-shaped) |
+| `GET https://diggers.fun/api/token-info/all` | Every listed token (V2 + recovered externals), each entry tagged with its `platform` |
+| `GET https://diggers.fun/api/token-info/og` | V1-era OG Diggers launches only |
+| `GET https://diggers.fun/api/token-info/noxa` | Noxa rescues (externally-launched recovered tokens) only |
 | `GET https://diggers.fun/api/token-info/{address}` | Single token detail |
-| `GET https://diggers.fun/tokenlist.json` | Uniswap token-list schema |
+| `GET https://diggers.fun/tokenlist.json` | Uniswap token-list schema — native V2 launches only |
 | `GET https://diggers.fun/llms.txt` | AI/LLM crawler summary |
+
+List endpoints accept `?limit=` (max 200) and `?offset=`; every entry carries
+`chainId` and `platform`.
 
 All endpoints serve CORS `*` and `Cache-Control: public, s-maxage=60`.
