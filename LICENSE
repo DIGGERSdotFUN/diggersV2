@@ -1,0 +1,346 @@
+Business Source License 1.1
+
+License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.
+
+-----------------------------------------------------------------------------
+
+Parameters
+
+Licensor:             diggersdotfun.eth
+                      The Licensor is the natural person or entity that
+                      controls the ENS name diggersdotfun.eth at any given
+                      time. Ownership of the Licensed Work follows control
+                      of that ENS name; no company is interposed.
+
+Licensed Work:        Diggers V2
+                      The Licensed Work is (c) 2026 diggersdotfun.eth and
+                      is owned exclusively by the holder of the ENS name
+                      diggersdotfun.eth.
+
+Additional Use Grant: Any uses listed and defined at
+                      v2-license-grants.diggersdotfun.eth
+
+Change Date:          The earlier of 2030-07-19 or a date specified at
+                      v2-license-date.diggersdotfun.eth
+
+Change Owner:         The earlier of 2030-07-19 or a date specified at
+                      v2-license-change-owner.diggersdotfun.eth
+
+Change License:       GNU General Public License v2.0 or later
+
+-----------------------------------------------------------------------------
+
+Terms
+
+The Licensor hereby grants you the right to copy, modify, create derivative
+works, redistribute, and make non-production use of the Licensed Work. The
+Licensor may make an Additional Use Grant, above, permitting limited
+production use.
+
+Effective on the Change Date, or the fourth anniversary of the first publicly
+available distribution of a specific version of the Licensed Work under this
+License, whichever comes first, the Licensor hereby grants you rights under
+the terms of the Change License, and the rights granted in the paragraph
+above terminate.
+
+If your use of the Licensed Work does not comply with the requirements
+currently in effect as described in this License, you must purchase a
+commercial license from the Licensor, its affiliated entities, or authorized
+resellers, or you must refrain from using the Licensed Work.
+
+All copies of the original and modified Licensed Work, and derivative works
+of the Licensed Work, are subject to this License. This License applies
+separately for each version of the Licensed Work and the Change Date may vary
+for each version of the Licensed Work released by Licensor.
+
+You must conspicuously display this License on each original or modified copy
+of the Licensed Work. If you receive the Licensed Work in original or
+modified form from a third party, the terms and conditions set forth in this
+License apply to your use of that work.
+
+Any use of the Licensed Work in violation of this License will automatically
+terminate your rights under this License for the current and all other
+versions of the Licensed Work.
+
+This License does not grant you any right in any trademark or logo of
+Licensor or its affiliates (provided that you may use a trademark or logo of
+Licensor as expressly required by this License).
+
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSED WORK IS PROVIDED ON
+AN "AS IS" BASIS. LICENSOR HEREBY DISCLAIMS ALL WARRANTIES AND CONDITIONS,
+EXPRESS OR IMPLIED, INCLUDING (WITHOUT LIMITATION) WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND
+TITLE.
+
+MariaDB hereby grants you permission to use this License's text to license
+your works, and to refer to it using the trademark "Business Source License",
+as long as you comply with the Covenants of Licensor below.
+
+-----------------------------------------------------------------------------
+
+Covenants of Licensor
+
+In consideration of the right to use this License's text and the "Business
+Source License" name and trademark, Licensor covenants to MariaDB, and to all
+other recipients of the licensed work to be provided by Licensor:
+
+1. To specify as the Change License the GPL Version 2.0 or any later version,
+   or a license that is compatible with GPL Version 2.0 or a later version,
+   where "compatible" means that software provided under the Change License can
+   be included in a program with software provided under GPL Version 2.0 or a
+   later version. Licensor may specify additional Change Licenses without
+   limitation.
+
+2. To either: (a) specify an additional grant of rights to use that does not
+   impose any additional restriction on the right granted in this License, as
+   the Additional Use Grant; or (b) insert the text "None".
+
+3. To specify a Change Date.
+
+4. Not to modify this License in any other way.
+
+-----------------------------------------------------------------------------
+
+Notice
+
+The Business Source License (this document, or the "License") is not an Open
+Source license. However, the Licensed Work will eventually be made available
+under an Open Source License, as stated in this License.
+
+-----------------------------------------------------------------------------
+
+Identity of the Licensor
+
+The Licensor of the Licensed Work is not a company. The Licensor is defined,
+at all times, as whoever lawfully controls the ENS name diggersdotfun.eth on
+Ethereum mainnet. All rights, powers, remedies, and revenues reserved to the
+Licensor under this License vest in, and transfer automatically with, lawful
+control of that ENS name. Any reference in this License to "the Licensor",
+"diggersdotfun.eth", or the owner of the Licensed Work shall be read
+accordingly. Records published as ENS text records under diggersdotfun.eth
+and its subnames (including the Parameters records named above) are the
+authoritative, machine-readable source of the License parameters, the
+Additional Use Grants, and the official deployment registry.
+
+-----------------------------------------------------------------------------
+
+Licensed Work Components and Use Provisions
+
+I. LICENSED WORK COMPONENTS
+   The Licensed Work "Diggers V2" refers to the entire invention and logic of
+   the protocol, including the deployed contracts, the interfaces, the
+   libraries, and the documentation, which includes but is not limited to:
+
+   A. CORE SMART CONTRACTS:
+      1. Diggers (the singleton launchpad: factory + Uniswap V3 swap router +
+         fee splitter + name registry; binds DiggersHub at construction)
+      2. DiggersHub (the events/views singleton: emitter-gated log* relays +
+         ecosystem views via Diggers extsload)
+      3. DiggersToken (the launched-coin implementation; every launch is an
+         EIP-1167 minimal proxy of it)
+      4. DiggersLocker (the vesting escrow for create-time and post-launch
+         distribution locks)
+
+   B. PROTOCOL LIBRARIES:
+      1. DiggerBuybackLib
+      2. DiggerCharset
+      3. DiggerCreateLib
+      4. DiggerGraduationLib
+      5. DiggerGraduationMath
+      6. DiggerHarvestLib
+      7. DiggerHarvestMath
+      8. DiggerHarvestViews
+      9. DiggerLaunchLiquidity
+      10. DiggerLaunchMath
+      11. DiggerMath
+      12. DiggerQuotes
+      13. DiggerRegistryLib
+      14. DiggerSwapViews
+      15. DiggerTwapOracle
+      16. DiggerV3
+
+   C. PROTOCOL INTERFACES:
+      1. IDiggers
+      2. IDiggersHub
+      3. IDiggersLocker
+      4. IDiggersToken
+      5. IGlueV2
+
+   D. OFFICIAL DEPLOYED CONTRACT ADDRESSES:
+      The canonical addresses of the official Diggers V2 deployment (the
+      Diggers launchpad, DiggersHub, DiggersLocker, and DiggersToken
+      implementation), together with the chains they are deployed on, are
+      published as ENS text records at v2-deployments.diggersdotfun.eth.
+      Only addresses published there are official; every other deployment
+      of this code is a counterfeit.
+
+II. AUTHORIZED USES
+    Subject to the terms and conditions of this License, the Licensor hereby
+    grants the Licensee the following rights:
+
+    A. The Licensee may launch coins through the official Diggers V2
+       deployment, trade them, harvest fees, graduate them, reserve names,
+       and earn money from all of these activities.
+
+    B. The Licensee may build interfaces, applications, bots, and tools that
+       interact with the official Diggers V2 deployment and earn money from
+       such activities.
+
+    C. The Licensee may develop smart contracts of any kind that interact
+       with the official Diggers V2 deployment and earn money from such
+       development.
+
+    D. The Licensee may integrate existing protocols and platforms with the
+       official Diggers V2 deployment and earn money from such integration.
+
+    E. The Licensee may build on top of coins launched through the official
+       Diggers V2 deployment (including their points, daily contest, vesting,
+       buyback, and graduation mechanics) and earn money from such expansion.
+
+    F. The Licensee may index, display, analyze, and redistribute on-chain
+       data emitted by the official Diggers V2 deployment (including events
+       from DiggersHub) and earn money from such services.
+
+    G. The Licensee may deploy smart contracts, platforms, or tools that
+       reference the official Diggers V2 addresses published at
+       v2-deployments.diggersdotfun.eth, provided they preserve those
+       addresses and do not alter or bypass the protocol's intended
+       functionality or security measures, and may earn money from such
+       deployment.
+
+III. PROHIBITED USES
+     Notwithstanding any other provisions of this License, the Licensee is
+     expressly prohibited from:
+
+     A. Any uses not listed in Section II above.
+
+     B. Forking the deployed contracts.
+
+     C. Deploying their own identical or customized version of Diggers V2.
+
+     D. Deploying their own identical or customized version of Diggers V2 or
+        its logic rewritten in another programming language.
+
+     E. Deploying Diggers V2 on any chain not listed at
+        v2-deployments.diggersdotfun.eth.
+
+     F. Using the Diggers name, logo, or branding without permission.
+
+     G. Earning money by deploying their own version of Diggers V2.
+
+     H. Earning money by using Diggers V2 on chains not listed at
+        v2-deployments.diggersdotfun.eth.
+
+     I. Earning money by deploying their identical or customized version of
+        Diggers V2.
+
+     J. Modifying, altering, or replacing the official addresses published at
+        v2-deployments.diggersdotfun.eth in any implementation, or creating
+        variants that bypass or interfere with the intended functionality of
+        the official Diggers V2 deployment.
+
+     K. Creating interfaces, contracts, or any integration components that
+        reference counterfeit Diggers deployments or that circumvent, modify,
+        or bypass the official protocol's security measures or intended
+        behavior.
+
+-----------------------------------------------------------------------------
+
+Definition of "Earn Money" and Enforcement Rights
+
+For the purposes of this License, the term "earn money" shall be construed
+broadly and comprehensively to encompass, without limitation, any and all
+forms of direct or indirect monetary or economic benefit, including but not
+limited to:
+
+- Receipt of fiat currency through any transfer mechanism, payment processor,
+  or financial institution;
+- Acquisition of digital assets, cryptocurrencies, tokens, coins, or any
+  blockchain-based value representation;
+- Collection of protocol fees in any denomination, token, or non-fungible
+  token (NFT);
+- Securing venture capital funding, angel investments, grants, loans, or any
+  other form of financial backing where the funds are obtained based on, or
+  in connection with, activities related to a counterfeit version of
+  Diggers V2;
+- Launching, minting, distributing, or selling any token, coin, or NFT whose
+  value, utility, functionality, or market perception is directly or
+  indirectly correlated to or derived from a counterfeit version of
+  Diggers V2 or any not permitted activities under this License;
+- Receiving any form of compensation, revenue-sharing, profit distribution,
+  dividend, royalty, commission, or incentive;
+- Obtaining any non-monetary benefit that can be quantified in economic terms
+  or converted to monetary value.
+
+ENFORCEMENT RIGHTS: The holder of the ENS name diggersdotfun.eth, as the
+exclusive owner of all intellectual property rights and licensable components
+of Diggers V2, hereby reserves and retains the absolute and unilateral right,
+at its sole discretion, to impose fees, restrict access, implement technical
+limitations, or otherwise enjoin the usage of any software, application, or
+implementation that contravenes the terms of this License, including but not
+limited to unauthorized forks, counterfeit versions, or non-compliant
+integrations. Notwithstanding any other remedies available at law or in
+equity, the holder of diggersdotfun.eth may deploy technological measures to
+identify and restrict functionality of unauthorized implementations. Any fee
+structure imposed shall be determined exclusively by the holder of
+diggersdotfun.eth and may be modified at any time without prior notice. User
+hereby acknowledges that any attempt to circumvent such restrictions
+constitutes a material breach of this License and may subject the user to
+additional legal action, including claims for damages, injunctive relief, and
+recovery of attorney's fees and legal costs incurred in enforcing these
+provisions.
+
+-----------------------------------------------------------------------------
+
+Additional Enforcement Rights for Non-Monetized Infringement
+
+ENFORCEMENT AGAINST NON-MONETIZED COUNTERFEIT VERSIONS: Notwithstanding the
+absence of direct or indirect monetary gain as defined in "earn money" above,
+the holder of the ENS name diggersdotfun.eth, as the exclusive owner of all
+intellectual property rights and licensable components, hereby expressly
+reserves all rights, remedies, and causes of action against any entity or
+individual who creates, deploys, maintains, promotes, or otherwise
+facilitates a counterfeit version of Diggers V2, regardless of whether such
+version generates revenue or other economic benefit. For avoidance of doubt:
+
+- Mandatory Cessation and Desist: The holder of diggersdotfun.eth retains the
+  unequivocal and non-waivable right to demand and enforce immediate
+  cessation of operation, distribution, and availability of any counterfeit
+  implementation of Diggers V2, and may, at its sole discretion, pursue all
+  available technological, contractual, and legal mechanisms to effectuate
+  such cessation;
+- Comprehensive Damages Recovery: In the event of deployment or operation of
+  a counterfeit version of Diggers V2, the holder of diggersdotfun.eth shall
+  be entitled to seek and recover all direct, indirect, consequential,
+  special, punitive, and exemplary damages attributable to such infringement,
+  including but not limited to: (i) monetary losses; (ii) reputational harm;
+  (iii) market confusion; (iv) diminution of brand value; (v) costs of
+  enforcement; and (vi) reasonable attorney's fees and litigation expenses;
+- Personal and Corporate Liability: The holder of diggersdotfun.eth expressly
+  reserves the right to pursue legal action against both the corporate
+  entities and individual persons responsible for or contributing to any
+  infringement hereunder, including but not limited to developers, deployers,
+  operators, promoters, and financial beneficiaries of counterfeit
+  implementations, regardless of the scope or extent of their participation;
+- Chain Analysis and Identity Verification: In furtherance of enforcing its
+  rights hereunder, the holder of diggersdotfun.eth may, to the fullest
+  extent permitted by applicable law, engage with blockchain analytics
+  providers, compliance officers, regulatory authorities, and law enforcement
+  agencies to: (i) trace and analyze on-chain activities related to
+  counterfeit implementations; (ii) identify wallet addresses associated with
+  such activities; (iii) correlate such addresses with personal identifying
+  information; and (iv) pursue all available channels to ascertain the legal
+  identities of persons engaged in unlicensed counterfeit activities. The
+  User hereby acknowledges that blockchain transaction data is publicly
+  available and subject to analysis, and that anonymity on public blockchains
+  is not guaranteed.
+
+The foregoing enforcement provisions shall be construed to provide the holder
+of the ENS name diggersdotfun.eth with the broadest possible remedial scope
+permitted under applicable law, and any ambiguity shall be resolved in favor
+of protecting the intellectual property, contractual, and proprietary rights
+attached to diggersdotfun.eth. The User hereby acknowledges that any
+involvement with counterfeit implementations constitutes a knowing and
+material breach of this License and may subject the User to substantial legal
+liability.
