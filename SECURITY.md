@@ -182,12 +182,30 @@ mechanism *removes tokens from supply* and puts buy pressure on the pool.
 
 The timing is deliberate too: the buyback piggybacks on a buy that has
 **already settled** — it runs at the tail of the user's transaction, after
-their tokens are delivered at their price. It cannot front-run the buyer
-and it cannot sandwich them: the user's fill is locked in before the
-buyback spends anything, and its spend is capped relative to the carrying
-trade (anti-sandwich sizing in `DiggerBuybackLib.prepare`), so it can't be
-weaponized to move the price against the next trader either. The buyback
-only ever pushes the price *after* the buyer is already in.
+their tokens are delivered at their price:
+
+```solidity
+// Diggers.sol — inside _trade(): the user's swap settles FIRST...
+DiggerV3.SwapOutcome memory out = _swapV3(_pool(token), token, isBuy, amountIn, recipient, minOut);
+
+// ...and the buyback rides at the very END of the same transaction,
+// on BUYS only — a sell can never unlock a pot spend.
+if (isBuy) _maybeBuyback(token, out.amountOut);  // user's output = the buyback's size cap
+
+function _maybeBuyback(address token, uint256 userAmountOut) private {
+    ...
+    try this.execBuyback(token, userAmountOut) {} catch {}  // can never revert the trade
+}
+```
+
+Three guarantees in four lines. The buyer's fill is locked in before the
+pot spends anything, so it cannot front-run or sandwich them. The spend is
+sized against `userAmountOut` — the carrying trade's own output — so the
+pot can never move the price by more than the buy it rides on
+(anti-sandwich sizing in `DiggerBuybackLib.prepare`). And the whole flow is
+a try/caught self-call: a buyback failure can never revert the user's
+trade. The buyback only ever pushes the price *after* the buyer is
+already in.
 
 ### The liquidity itself cannot be drained — by anyone
 
@@ -217,11 +235,34 @@ on pool trades:
 - relays each of these to the DiggersHub event singleton.
 
 Those are external calls during a transfer — that's what an on-chain
-trade-to-earn engine looks like. The same flag fires for every token with
-any transfer hook (reflections, taxes, rebase, hooks of any kind).
-Meanwhile the checks that measure actual trading risk are green on every
-scanner: **0% buy tax, 0% sell tax, not modifiable, no honeypot, no hidden
-owner, no blacklist, no pause**.
+trade-to-earn engine looks like:
+
+```solidity
+// DiggersToken.sol — inside _update(): these ARE the "external calls"
+if (buyLeg || sellLeg) {
+    DiggerV3.Slot0 memory slot0 = DiggerV3.getSlot0(pool);   // read the pool's spot price
+    uint256 ethValue = DiggerMath.md512(amount, ..., 1e18);
+    volumeEthCum += ethValue;                                // graduation telemetry
+    _dailyTick[block.timestamp / 1 days] = DayTick({tick: slot0.tick, recorded: true});
+
+    IDiggersHub(HUB).logPoolTrade(                           // the public trade feed
+        buyLeg ? to : from, buyLeg, amount, ethValue, slot0.tick, holderCount, volumeEthCum, epoch
+    );
+
+    _applyGuardedRewards(buyLeg ? to : from, amount, buyLeg); // digging points
+}
+```
+
+Read what those calls actually are: a **static read** of the pool's price,
+an **event relay** to the DiggersHub (an immutable contract whose only job
+is printing logs), and the points engine. No value moves, no called address
+is user-controlled, and the points path runs through a same-block
+round-trip guard — a flash-loan buy-then-sell earns exactly zero.
+
+The same flag fires for every token with any transfer hook (reflections,
+taxes, rebase, hooks of any kind). Meanwhile the checks that measure actual
+trading risk are green on every scanner: **0% buy tax, 0% sell tax, not
+modifiable, no honeypot, no hidden owner, no blacklist, no pause**.
 
 ---
 
