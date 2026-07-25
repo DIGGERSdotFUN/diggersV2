@@ -180,6 +180,15 @@ into the token, and the bought tokens are **burned** — publicly logged via
 or otherwise. Calling this "LiquidityDrain" gets it exactly backwards: the
 mechanism *removes tokens from supply* and puts buy pressure on the pool.
 
+The timing is deliberate too: the buyback piggybacks on a buy that has
+**already settled** — it runs at the tail of the user's transaction, after
+their tokens are delivered at their price. It cannot front-run the buyer
+and it cannot sandwich them: the user's fill is locked in before the
+buyback spends anything, and its spend is capped relative to the carrying
+trade (anti-sandwich sizing in `DiggerBuybackLib.prepare`), so it can't be
+weaponized to move the price against the next trader either. The buyback
+only ever pushes the price *after* the buyer is already in.
+
 ### The liquidity itself cannot be drained — by anyone
 
 The actual pool liquidity, which the flag's name implies is at risk:
