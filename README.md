@@ -114,11 +114,13 @@ contracts/
 ├── DiggersHub.sol           Events singleton + ecosystem views (extsload reads)
 ├── DiggersToken.sol         Launched-coin implementation (ERC20 + all token mechanics)
 ├── DiggersLocker.sol        Vesting escrow (ID-based multi-lock, approve-free)
+├── DiggersRouterV2.sol      Standalone universal router (Uniswap V2/V3/V4, any chain)
 ├── interfaces/
 │   ├── IDiggers.sol         Full external surface + errors + structs
 │   ├── IDiggersHub.sol      Hub surface + all protocol events
 │   ├── IDiggersLocker.sol   Locker interface
 │   ├── IDiggersToken.sol    Token interface
+│   ├── IDiggersRouterV2.sol Router V2 interface (events + errors, indexer-ready)
 │   └── IGlueV2.sol          Glue NAV-backing deposit interface
 └── libs/
     ├── DiggerV3.sol          Uniswap V3 pool plumbing + interfaces
@@ -270,6 +272,29 @@ ID-based multi-lock vesting. Tokens are held on the Locker; schedules enforce N 
 | lockedOf(token, wallet) | view | Total still-locked balance |
 | lockedSupplyOf(token) | view | Total locked supply across all wallets |
 | withdrawableOf(token, wallet, index) | view | How much is withdrawable right now |
+
+---
+
+### DiggersRouterV2.sol — The Universal Router
+
+A standalone quote↔token swap router over external AMMs — Uniswap V2 pairs, V3 pools, and V4 hookless pools — with a small capped fee skim to the treasury. It shares no state with the launchpad, holds no positions, and one codebase deploys on **any chain**: ETH/L2 chains quoting in an 18-dec WETH9 as well as USD-native chains (Stable) whose gas token is a dual-native ERC20 with non-18 decimals (USDT0, 6). The external surface is always native wei; the quote side converts to pool units internally.
+
+**Set-once venue registry.** The Uniswap V2 factory, V3 factory, and V4 PoolManager are each pinned **exactly once** — at deploy or later by the owner. A chain where V4 hasn't shipped yet deploys with V2/V3 only; the V4 code is already integrated and arms the moment the PoolManager address is set. Once set, a venue can never be changed or removed.
+
+| Function | Access | Description |
+|---|---|---|
+| buy(token, venue, pool, minOut, deadline, recipient) | payable | Buy tokens with native value; router fee skimmed off `msg.value` |
+| sell(token, venue, pool, amountIn, minOut, deadline, recipient) | external | Sell tokens for native value; fee skimmed off the output (needs ERC20 approval) |
+| sweep() | external | Send accrued fees to the fee recipient. Permissionless |
+| setV2Factory / setV3Factory / setPoolManager | owner, one-shot | Arm a venue that was not pinned at deploy. Reverts `VenueLocked` once set |
+| setFeeWad(uint256) | owner | Fee rate (1e18-scaled), hard-capped at 10% |
+| setFeeRecipient(address) | owner | Rotate the sweep target |
+| transferOwnership(address) | owner | Transfer or renounce (renounce freezes fee + venue registry forever) |
+| QUOTE() / QUOTE_SCALE() / DUAL_NATIVE() | view | Quote token, wei-per-unit scale, dual-native mode |
+| v2Factory() / v3Factory() / poolManager() | view | Pinned venue addresses (address(0) = not armed) |
+| pendingFees() / poolFor(token, feeTier) | view | Accrued fees; canonical V3 pool lookup |
+
+Every trade emits a rich `Swapped` event (venue, gross/fee/net in native wei, post-trade sqrtPrice/tick/liquidity, 1e18-scaled spot price) so indexers never need an RPC follow-up.
 
 ---
 
