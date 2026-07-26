@@ -20,6 +20,14 @@ Identical on every chain:
 | **DiggersHub** (events + views) | `0xdEBA423Ab2D46650061555aaBEC362673c811b44` |
 | **DiggersLocker** (vesting escrow) | `0xF37b72a3cB71489F2b95Cf7373681a28AFEfD1A8` |
 | **DiggersToken** (implementation) | `0x74a1951f6dB8cB6cd2D2099fa0d020Fb0C52fd9B` |
+| **DiggersRouterV2** (universal external-asset router) | `0xf8A3C6c2f08214D767E1d543447986774e39C377` |
+
+DiggersRouterV2 serves **externally-listed assets only** (tokens with existing
+Uniswap V2/V3/V4 pools) — Diggers launches always trade through the launchpad.
+Per-chain venue registry (set-once): Ethereum and Robinhood have all three legs
+armed (V2 factory + V3 factory + V4 PoolManager); Stable has V2 + V3 armed and
+the V4 slot empty until a canonical PoolManager ships there. Launch fee 0.1%
+(`feeWad = 1e15`), owner-capped at 10%.
 
 Per-chain configuration (read live from the launchpad):
 

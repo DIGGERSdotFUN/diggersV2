@@ -279,6 +279,8 @@ ID-based multi-lock vesting. Tokens are held on the Locker; schedules enforce N 
 
 A standalone quote↔token swap router over external AMMs — Uniswap V2 pairs, V3 pools, and V4 hookless pools — with a small capped fee skim to the treasury. It shares no state with the launchpad, holds no positions, and one codebase deploys on **any chain**: ETH/L2 chains quoting in an 18-dec WETH9 as well as USD-native chains (Stable) whose gas token is a dual-native ERC20 with non-18 decimals (USDT0, 6). The external surface is always native wei; the quote side converts to pool units internally.
 
+Live at `0xf8A3C6c2f08214D767E1d543447986774e39C377` on **Ethereum, Robinhood Chain, and Stable** (same address on all three; launch fee 0.1%). On Stable the V4 slot is deliberately unset — Uniswap V4 hasn't shipped there — and arms via `setPoolManager` the day it does.
+
 **Set-once venue registry.** The Uniswap V2 factory, V3 factory, and V4 PoolManager are each pinned **exactly once** — at deploy or later by the owner. A chain where V4 hasn't shipped yet deploys with V2/V3 only; the V4 code is already integrated and arms the moment the PoolManager address is set. Once set, a venue can never be changed or removed.
 
 | Function | Access | Description |
@@ -365,6 +367,7 @@ The protocol is deployed at the **same addresses on every chain**:
 | **DiggersHub** (events + views) | `0xdEBA423Ab2D46650061555aaBEC362673c811b44` |
 | **DiggersLocker** (vesting) | `0xF37b72a3cB71489F2b95Cf7373681a28AFEfD1A8` |
 | **DiggersToken** (implementation) | `0x74a1951f6dB8cB6cd2D2099fa0d020Fb0C52fd9B` |
+| **DiggersRouterV2** (universal router) | `0xf8A3C6c2f08214D767E1d543447986774e39C377` |
 
 Per-chain configuration:
 
