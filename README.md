@@ -376,8 +376,6 @@ Exceptions (RouterV2 only — Diggers itself is still at the parity address abov
 | **MegaETH** (4326) | `0x985C5Dd0E5F017fa11392A930f7003178c564ee1` | Parity address burned by an OOG first attempt; live at the deployer's nonce-1 CREATE address |
 | **HyperEVM** (999) | — not deployed yet | Diggers / Hub / Locker / Token are live at the parity addresses. RouterV2 lands with the external-listings step |
 
-> HyperEVM explorers may also show an earlier **pilot** Diggers at `0xb5E35369B0854322eD15A93fb41F040DdB051D4B` — that is superseded. The canonical launchpad is `0x5044E79669Fee78A7bC2007A8e7AE4f820252e4b`.
-
 Per-chain configuration:
 
 | Chain | Chain ID | Quote | Uniswap V3 / DEX factory | Creation fee |
