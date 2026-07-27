@@ -14,7 +14,7 @@ This repository contains the **complete Solidity sources** of the V2 protocol.
 
 | | |
 |---|---|
-| **Chains** | Ethereum (1) · Robinhood Chain (4663) · Stable (988) · any EVM with Uniswap V3 |
+| **Chains** | Ethereum · Robinhood · Stable · Base · MegaETH · BNB · HyperEVM · Optimism · Unichain · Arbitrum |
 | **Compiler** | solc ^0.8.35 · viaIR · optimizer · Cancun (EIP-1153) |
 | **License** | Business Source License 1.1 → GPL-2.0-or-later |
 | **ENS** | diggersdotfun.eth |
@@ -37,7 +37,7 @@ Creator calls create()
 * **Fees flow, not drain.** 1% forced pool fee → harvested → team / creator split table → pull payments. Token-side fees → part burned, part to the daily contest pot, part to optional buyback or Glue NAV-backing.
 * **Trade to earn.** Every pool trade earns digging points (buys 4×, sells 1×). Top 10 of each 24h epoch split the daily pot. Settled lazily.
 * **Graduate pump.fun-style.** A token graduates when 80% of the supply has been bought out of its pool — that drops the 2% anti-whale cap forever. Then holders + volume + mean mcap earn **Blue Chip status**, which locks your name and ticker forever with paid reservations. USD-denominated bars on ETH-quote chains via a V3 TWAP oracle.
-* **Multi-chain native.** ETH-gas chains (Robinhood) and USD-native chains (Stable with USDT0) are both first-class. JSON presets + auto-derived start ticks + preflight guards make deploying to a new chain a single command.
+* **Multi-chain native.** Live on ten chains — ETH-gas (Ethereum, Robinhood, Base, MegaETH, BNB, HyperEVM, Optimism, Unichain, Arbitrum) and USD-native (Stable with USDT0). JSON presets + auto-derived start ticks + preflight guards make deploying to a new chain a single command.
 
 ---
 
@@ -359,7 +359,7 @@ The `libs/` directory contains the protocol's internal plumbing. They are not us
 
 ## Deployments
 
-The protocol is deployed at the **same addresses on every chain**:
+The core stack was deployed CREATE-deterministically from a fresh wallet, so Diggers / Hub / Locker / Token live at the **same addresses on every chain** (including HyperEVM):
 
 | Contract | Address (all chains) |
 |---|---|
@@ -369,13 +369,31 @@ The protocol is deployed at the **same addresses on every chain**:
 | **DiggersToken** (implementation) | `0x74a1951f6dB8cB6cd2D2099fa0d020Fb0C52fd9B` |
 | **DiggersRouterV2** (universal router) | `0xf8A3C6c2f08214D767E1d543447986774e39C377` |
 
+Exceptions (RouterV2 only — Diggers itself is still at the parity address above):
+
+| Chain | DiggersRouterV2 | Notes |
+|---|---|---|
+| **MegaETH** (4326) | `0x985C5Dd0E5F017fa11392A930f7003178c564ee1` | Parity address burned by an OOG first attempt; live at the deployer's nonce-1 CREATE address |
+| **HyperEVM** (999) | — not deployed yet | Diggers / Hub / Locker / Token are live at the parity addresses. RouterV2 lands with the external-listings step |
+
+> HyperEVM explorers may also show an earlier **pilot** Diggers at `0xb5E35369B0854322eD15A93fb41F040DdB051D4B` — that is superseded. The canonical launchpad is `0x5044E79669Fee78A7bC2007A8e7AE4f820252e4b`.
+
 Per-chain configuration:
 
-| Chain | Chain ID | Quote | Uniswap V3 factory | Creation fee |
+| Chain | Chain ID | Quote | Uniswap V3 / DEX factory | Creation fee |
 |---|---|---|---|---|
 | Ethereum | 1 | ETH (WETH) | `0x1F98431c8aD98523631AE4a59f267346ea31F984` | 0.001 ETH |
-| Robinhood Chain | 4663 | ETH (WETH) | `0x1f7d7550B1b028f7571E69A784071F0205FD2EfA` | 0.001 ETH |
+| Optimism | 10 | ETH (WETH) | `0x1F98431c8aD98523631AE4a59f267346ea31F984` | 0.001 ETH |
+| BNB Chain | 56 | BNB (WBNB) | `0xdB1d10011AD0Ff90774D0C6Bb92e5C5c8b4461F7` | 0.0035 BNB |
+| Unichain | 130 | ETH (WETH) | `0x1F98400000000000000000000000000000000003` | 0.001 ETH |
 | Stable | 988 | USDT0 (dual-native) | `0x88F0a512eF09175D456bc9547f914f48C013E4aA` | 1 USDT0 |
+| HyperEVM | 999 | HYPE (WHYPE) | `0xFf7B3e8C00e57ea31477c32A5B52a58Eea47b072` (Project X) | 0.035 HYPE |
+| Base | 8453 | ETH (WETH) | `0x33128a8fC17869897dcE68Ed026d694621f6FDfD` | 0.001 ETH |
+| MegaETH | 4326 | ETH (WETH) | `0x3a5F0CD7d62452b7f899B2A5758BFa57be0dE478` | 0.001 ETH |
+| Robinhood Chain | 4663 | ETH (WETH) | `0x1f7d7550B1b028f7571E69A784071F0205FD2EfA` | 0.001 ETH |
+| Arbitrum One | 42161 | ETH (WETH) | `0x1F98431c8aD98523631AE4a59f267346ea31F984` | 0.001 ETH |
+
+Public creation (`setCreationOpen(true)`) is live on all ten chains.
 
 See `v2-deployments.diggersdotfun.eth` for the canonical registry, and [FUNCTIONS.md](FUNCTIONS.md) for the function reference, live transactions, and the full event topic reference.
 
